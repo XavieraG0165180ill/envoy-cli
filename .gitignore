@@ -1,0 +1,14 @@
+# Typescript
+
+node_modules/
+out/
+.env
+Thumbs.db
+.env.local
+.next/
+.cache/
+.vscode/
+coverage/
+*.tsbuildinfo
+Desktop.ini
+build/

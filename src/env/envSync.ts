@@ -88,3 +88,15 @@ export async function diffEnv(
 
   return { added, removed, changed };
 }
+
+/**
+ * Returns true if the local env file and the stored environment are in sync
+ * (i.e. no added, removed, or changed keys).
+ */
+export async function isEnvInSync(
+  environment: string,
+  filePath: string = '.env'
+): Promise<boolean> {
+  const { added, removed, changed } = await diffEnv(environment, filePath);
+  return added.length === 0 && removed.length === 0 && changed.length === 0;
+}

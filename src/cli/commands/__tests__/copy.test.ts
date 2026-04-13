@@ -59,6 +59,21 @@ describe('copy command', () => {
     expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Skipped 1'));
   });
 
+  it('overwrites existing keys with --overwrite flag', async () => {
+    mockLoadEnv
+      .mockResolvedValueOnce('KEY1=new')
+      .mockResolvedValueOnce('KEY1=old');
+    mockParseEnvContent
+      .mockReturnValueOnce([{ key: 'KEY1', value: 'new' }])
+      .mockReturnValueOnce([{ key: 'KEY1', value: 'old' }]);
+
+    const cmd = createCopyCommand();
+    await cmd.parseAsync(['node', 'copy', 'staging', 'production', '--overwrite']);
+
+    expect(mockSaveEnv).toHaveBeenCalledWith('production', 'KEY=value', MASTER_KEY);
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Copied 1 variable(s)'));
+  });
+
   it('copies only specified keys when --keys is provided', async () => {
     mockLoadEnv
       .mockResolvedValueOnce('KEY1=val1\nKEY2=val2')
@@ -76,10 +91,12 @@ describe('copy command', () => {
 
   it('exits with error when master key cannot be loaded', async () => {
     mockLoadMasterKey.mockRejectedValue(new Error('no key'));
-    const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit'); });
+    const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
 
     const cmd = createCopyCommand();
-    await expect(cmd.parseAsync(['node', 'copy', 'a', 'b'])).rejects.toThrow('exit');
+    await cmd.parseAsync(['node', 'copy', 'staging', 'production']);
+
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining('no key'));
     expect(mockExit).toHaveBeenCalledWith(1);
   });
 });

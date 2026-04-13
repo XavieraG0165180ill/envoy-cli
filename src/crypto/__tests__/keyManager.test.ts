@@ -57,4 +57,13 @@ describe('keyManager', () => {
   it('should not throw when deleting non-existent key', () => {
     expect(() => deleteMasterKey()).not.toThrow();
   });
+
+  it('should save the key file with restricted permissions (0o600)', () => {
+    const key = generateMasterKey();
+    saveMasterKey(key);
+    const stats = fs.statSync(TEST_KEY_FILE);
+    // Check that only the owner has read/write access (mode 0o600)
+    const fileMode = stats.mode & 0o777;
+    expect(fileMode).toBe(0o600);
+  });
 });

@@ -1,58 +1,50 @@
-import * as fs from 'fs';
+import * as fs from 'fs/promises';
 import * as path from 'path';
-import { encrypt, decrypt } from '../crypto/encryption';
-import { loadMasterKey } from '../crypto/keyManager';
-import { parseEnvContent, serializeEnv, EnvEntry, envToRecord } from './envParser';
-
-const ENVOY_STORE_DIR = '.envoy/store';
+import { ensureEnvoyDir } from '../crypto/keyManager';
 
 export function getStorePath(environment: string): string {
-  return path.join(process.cwd(), ENVOY_STORE_DIR, `${environment}.enc`);
+  const home = process.env.HOME || process.env.USERPROFILE || '';
+  return path.join(home, '.envoy', 'envs', `${environment}.enc`);
 }
 
-export async function saveEnvToStore(
-  environment: string,
-  entries: EnvEntry[]
-): Promise<void> {
-  const masterKey = await loadMasterKey();
-  const plaintext = serializeEnv(entries);
-  const encrypted = await encrypt(plaintext, masterKey);
+export async function listStoredEnvironments(): Promise<string[]> {
+  const home = process.env.HOME || process.env.USERPROFILE || '';
+  const envsDir = path.join(home, '.envoy', 'envs');
 
-  const storePath = getStorePath(environment);
-  fs.mkdirSync(path.dirname(storePath), { recursive: true });
-  fs.writeFileSync(storePath, JSON.stringify(encrypted), 'utf-8');
-}
-
-export async function loadEnvFromStore(
-  environment: string
-): Promise<EnvEntry[]> {
-  const storePath = getStorePath(environment);
-
-  if (!fs.existsSync(storePath)) {
-    throw new Error(`No stored environment found for: ${environment}`);
+  try {
+    await fs.mkdir(envsDir, { recursive: true });
+    const files = await fs.readdir(envsDir);
+    return files
+      .filter((f) => f.endsWith('.enc'))
+      .map((f) => f.replace(/\.enc$/, ''));
+  } catch {
+    return [];
   }
-
-  const masterKey = await loadMasterKey();
-  const encryptedData = JSON.parse(fs.readFileSync(storePath, 'utf-8'));
-  const plaintext = await decrypt(encryptedData, masterKey);
-  return parseEnvContent(plaintext).entries;
 }
 
-export function listStoredEnvironments(): string[] {
-  const storeDir = path.join(process.cwd(), ENVOY_STORE_DIR);
-  if (!fs.existsSync(storeDir)) return [];
-
-  return fs
-    .readdirSync(storeDir)
-    .filter((f) => f.endsWith('.enc'))
-    .map((f) => f.replace('.enc', ''));
+export async function environmentExists(environment: string): Promise<boolean> {
+  const storePath = getStorePath(environment);
+  try {
+    await fs.access(storePath);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-export async function exportEnvToFile(
-  environment: string,
-  outputPath: string
+export async function deleteEnvironment(environment: string): Promise<void> {
+  const storePath = getStorePath(environment);
+  await fs.unlink(storePath);
+}
+
+export async function renameEnvironment(
+  oldName: string,
+  newName: string
 ): Promise<void> {
-  const entries = await loadEnvFromStore(environment);
-  const content = serializeEnv(entries);
-  fs.writeFileSync(outputPath, content, 'utf-8');
+  await ensureEnvoyDir();
+  const oldPath = getStorePath(oldName);
+  const newPath = getStorePath(newName);
+  const newDir = path.dirname(newPath);
+  await fs.mkdir(newDir, { recursive: true });
+  await fs.rename(oldPath, newPath);
 }

@@ -37,4 +37,11 @@ describe('encryption', () => {
     const decrypted = decrypt(ciphertext, password);
     expect(decrypted).toBe('');
   });
+
+  it('should handle unicode and special characters', () => {
+    const specialPlaintext = 'SECRET=p@$$w0rd!\nUNICODE=héllo wörld\nEMOJI=🔑';
+    const ciphertext = encrypt(specialPlaintext, password);
+    const decrypted = decrypt(ciphertext, password);
+    expect(decrypted).toBe(specialPlaintext);
+  });
 });

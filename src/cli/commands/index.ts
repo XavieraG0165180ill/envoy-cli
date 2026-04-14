@@ -14,12 +14,15 @@ import { createAuditCommand } from './audit';
 import { createImportCommand } from './import';
 import { createSearchCommand } from './search';
 import { createSnapshotCommand } from './snapshot';
+import { createTagCommand } from './tag';
+import { createBackupCommand } from './backup';
+import { createShareCommand } from './share';
 
 export function registerCommands(program: Command): void {
-  program.addCommand(createInitCommand());
   program.addCommand(createPushCommand());
   program.addCommand(createPullCommand());
   program.addCommand(createListCommand());
+  program.addCommand(createInitCommand());
   program.addCommand(createRotateCommand());
   program.addCommand(createDiffCommand());
   program.addCommand(createExportCommand());
@@ -31,4 +34,7 @@ export function registerCommands(program: Command): void {
   program.addCommand(createImportCommand());
   program.addCommand(createSearchCommand());
   program.addCommand(createSnapshotCommand());
+  program.addCommand(createTagCommand());
+  program.addCommand(createBackupCommand());
+  program.addCommand(createShareCommand());
 }

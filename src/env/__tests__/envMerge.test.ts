@@ -74,34 +74,31 @@ describe('mergeEnvMaps', () => {
     const { merged } = mergeEnvMaps(base, oursWithoutC as any, base);
     expect(merged.KEY_C).toBeUndefined();
   });
+
+  it('detects multiple conflicts across different keys', () => {
+    const ours = { ...base, KEY_A: 'a-ours', KEY_B: 'b-ours' };
+    const theirs = { ...base, KEY_A: 'a-theirs', KEY_B: 'b-theirs' };
+    const { conflicts } = mergeEnvMaps(base, ours, theirs);
+    expect(conflicts).toHaveLength(2);
+    const keys = conflicts.map((c) => c.key);
+    expect(keys).toContain('KEY_A');
+    expect(keys).toContain('KEY_B');
+  });
 });
 
 describe('resolveConflict', () => {
-  const merged = { KEY_A: 'existing' };
   const conflict: MergeConflict = {
     key: 'KEY_A',
-    baseValue: 'base',
-    oursValue: 'ours-val',
-    theirsValue: 'theirs-val',
+    baseValue: 'a',
+    oursValue: 'a-ours',
+    theirsValue: 'a-theirs',
   };
 
-  it('resolves with ours', () => {
-    const result = resolveConflict(merged, conflict, 'ours');
-    expect(result.KEY_A).toBe('ours-val');
+  it('resolves to oursValue when strategy is "ours"', () => {
+    expect(resolveConflict(conflict, 'ours')).toBe('a-ours');
   });
 
-  it('resolves with theirs', () => {
-    const result = resolveConflict(merged, conflict, 'theirs');
-    expect(result.KEY_A).toBe('theirs-val');
-  });
-
-  it('resolves with custom value', () => {
-    const result = resolveConflict(merged, conflict, 'custom', 'my-custom');
-    expect(result.KEY_A).toBe('my-custom');
-  });
-
-  it('does not mutate the original merged map', () => {
-    resolveConflict(merged, conflict, 'theirs');
-    expect(merged.KEY_A).toBe('existing');
+  it('resolves to theirsValue when strategy is "theirs"', () => {
+    expect(resolveConflict(conflict, 'theirs')).toBe('a-theirs');
   });
 });

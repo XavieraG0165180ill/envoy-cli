@@ -13,6 +13,7 @@ import { createHistoryCommand } from './history';
 import { createAuditCommand } from './audit';
 import { createImportCommand } from './import';
 import { createSearchCommand } from './search';
+import { createSnapshotCommand } from './snapshot';
 
 export function registerCommands(program: Command): void {
   program.addCommand(createInitCommand());
@@ -29,4 +30,5 @@ export function registerCommands(program: Command): void {
   program.addCommand(createAuditCommand());
   program.addCommand(createImportCommand());
   program.addCommand(createSearchCommand());
+  program.addCommand(createSnapshotCommand());
 }

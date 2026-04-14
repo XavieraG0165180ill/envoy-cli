@@ -7,6 +7,11 @@ import { createRotateCommand } from './rotate';
 import { createDiffCommand } from './diff';
 import { createExportCommand } from './export';
 import { createCopyCommand } from './copy';
+import { createValidateCommand } from './validate';
+import { createRenameCommand } from './rename';
+import { createHistoryCommand } from './history';
+import { createAuditCommand } from './audit';
+import { createImportCommand } from './import';
 
 export function registerCommands(program: Command): void {
   program.addCommand(createInitCommand());
@@ -17,4 +22,9 @@ export function registerCommands(program: Command): void {
   program.addCommand(createDiffCommand());
   program.addCommand(createExportCommand());
   program.addCommand(createCopyCommand());
+  program.addCommand(createValidateCommand());
+  program.addCommand(createRenameCommand());
+  program.addCommand(createHistoryCommand());
+  program.addCommand(createAuditCommand());
+  program.addCommand(createImportCommand());
 }

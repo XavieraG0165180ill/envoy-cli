@@ -43,13 +43,19 @@ export function createBackupCommand(): Command {
   backup
     .command('restore <environment> <id>')
     .description('Restore an environment from a backup')
-    .action((environment: string, id: string) => {
+    .option('--no-backup', 'Skip creating a safety backup of the current state before restoring')
+    .action((environment: string, id: string, opts: { backup: boolean }) => {
       const entry = getBackupById(environment, id);
       if (!entry) {
         console.error(`Backup not found: ${id}`);
         process.exit(1);
       }
       const storePath = getStorePath(environment);
+      // Automatically create a safety backup of the current state before overwriting
+      if (opts.backup && fs.existsSync(storePath)) {
+        const current = fs.readFileSync(storePath, 'utf-8');
+        saveBackup(environment, current, `auto-backup before restore from ${id}`);
+      }
       fs.writeFileSync(storePath, entry.data);
       console.log(`Environment "${environment}" restored from backup ${id}`);
     });

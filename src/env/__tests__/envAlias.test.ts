@@ -74,3 +74,12 @@ test('listAliases returns all alias entries', () => {
   expect(list).toContainEqual({ alias: 'p', environment: 'production' });
   expect(list).toContainEqual({ alias: 'd', environment: 'development' });
 });
+
+test('listAliases returns empty array when no aliases exist', () => {
+  expect(listAliases()).toEqual([]);
+});
+
+test('getAliasFilePath returns a path within the envoy directory', () => {
+  const filePath = getAliasFilePath();
+  expect(filePath).toContain(testDir);
+});

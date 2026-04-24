@@ -11,6 +11,10 @@ jest.mock('../../../../src/crypto/keyManager', () => ({
 
 import { createRoleCommand } from '../role';
 
+/**
+ * Runs a role subcommand with the given arguments, capturing stdout, stderr,
+ * and the exit code. process.exit is mocked so tests don't actually terminate.
+ */
 function runCommand(args: string[]): { stdout: string; stderr: string; exitCode: number } {
   const logs: string[] = [];
   const errors: string[] = [];
@@ -86,5 +90,11 @@ describe('role command', () => {
     runCommand(['add', 'temp', '-p', 'read', '-e', 'dev']);
     const { stdout } = runCommand(['remove', 'temp']);
     expect(stdout).toContain('removed');
+  });
+
+  it('should fail to assign a non-existent role', () => {
+    const { stderr, exitCode } = runCommand(['assign', 'alice', 'nonexistent']);
+    expect(stderr).toContain('nonexistent');
+    expect(exitCode).toBe(1);
   });
 });

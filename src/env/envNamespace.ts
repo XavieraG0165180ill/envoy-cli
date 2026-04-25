@@ -35,6 +35,11 @@ export function addNamespace(name: string, prefix: string, description?: string)
   if (namespaces[name]) {
     throw new Error(`Namespace '${name}' already exists.`);
   }
+  // Check for duplicate prefix across existing namespaces
+  const duplicate = Object.values(namespaces).find(ns => ns.prefix === prefix);
+  if (duplicate) {
+    throw new Error(`Prefix '${prefix}' is already used by namespace '${duplicate.name}'.`);
+  }
   const ns: Namespace = { name, prefix, description, createdAt: new Date().toISOString() };
   namespaces[name] = ns;
   saveNamespaces(namespaces);
